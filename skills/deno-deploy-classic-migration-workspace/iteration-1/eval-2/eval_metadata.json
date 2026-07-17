@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "eval_name": "agent-runbook",
+  "prompt": "I want an agent-operable runbook for moving my dash.deno.com project to console.deno.com. Use the repo wizard as the checklist, but adapt it to my app source and include verification evidence.",
+  "assertions": [
+    "Uses deno-deploy-classic-migration-wizard.sh as the local checklist or explicitly references the local wizard.",
+    "Maps work to the official migration guide stages such as env vars, domains, HTTP API, cron, queues, and KV.",
+    "Includes a verification section with commands run or commands that should be run.",
+    "Clearly marks dashboard-only work separately from agent-editable repository work."
+  ]
+}

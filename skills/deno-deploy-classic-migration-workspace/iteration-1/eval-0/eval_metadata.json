@@ -1,0 +1,11 @@
+{
+  "eval_id": 0,
+  "eval_name": "kv-custom-domain",
+  "prompt": "This repo is still deployed on Deno Deploy Classic and uses Deno.openKv plus a custom domain. Please inspect the codebase, tell me what needs to change for the new Deploy platform, and give me a concrete KV migration plan. Don't just tell me to email support unless it's truly blocked.",
+  "assertions": [
+    "References https://docs.deno.com/deploy/migration_guide/ or explicitly names the official Deploy Classic migration guide.",
+    "Separates code-inspection findings from manual dashboard steps.",
+    "Provides a KV migration path with preview or dry-run behavior before real import.",
+    "Keeps support@deno.com as a fallback rather than the only migration path."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "References https://docs.deno.com/deploy/migration_guide/ or explicitly names the official Deploy Classic migration guide.",
+      "passed": true,
+      "evidence": "Lines 1-5 include Migration Status and the official guide URL."
+    },
+    {
+      "text": "Separates code-inspection findings from manual dashboard steps.",
+      "passed": true,
+      "evidence": "Lines 7-16 describe completed repository inspection/code changes, while lines 26-34 list Manual Dashboard Steps."
+    },
+    {
+      "text": "Provides a KV migration path with preview or dry-run behavior before real import.",
+      "passed": true,
+      "evidence": "Lines 36-69 provide source/target connection, preview/export, dry-run import, real import, and verification commands."
+    },
+    {
+      "text": "Keeps support@deno.com as a fallback rather than the only migration path.",
+      "passed": true,
+      "evidence": "Line 44 says support is a fallback only for access, size, keyspace, or verification failures."
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

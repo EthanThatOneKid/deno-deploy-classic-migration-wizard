@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Uses deno-deploy-classic-migration-wizard.sh as the local checklist or explicitly references the local wizard.",
+      "passed": true,
+      "evidence": "Line 3 names deno-deploy-classic-migration-wizard.sh as the source checklist."
+    },
+    {
+      "text": "Maps work to the official migration guide stages such as env vars, domains, HTTP API, cron, queues, and KV.",
+      "passed": true,
+      "evidence": "Lines 85-397 cover HTTP, queues/KV/cron, env vars, deploy, custom domains, smoke tests, and decommissioning."
+    },
+    {
+      "text": "Includes a verification section with commands run or commands that should be run.",
+      "passed": true,
+      "evidence": "Lines 11-32 include current repository evidence and commands; later stages include verification evidence to capture."
+    },
+    {
+      "text": "Clearly marks dashboard-only work separately from agent-editable repository work.",
+      "passed": true,
+      "evidence": "Lines 398-422 provide separate dashboard-only and agent-editable repository work summaries."
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

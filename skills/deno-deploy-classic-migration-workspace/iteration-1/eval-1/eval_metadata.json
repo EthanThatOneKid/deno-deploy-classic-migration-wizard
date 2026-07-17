@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "http-deployctl-queues",
+  "prompt": "Migrate this Deno app off Deploy Classic. It imports serve from std/http/server.ts, has a GitHub Action using deployctl, and calls Deno.Kv.enqueue for background jobs. Make the safe code/doc edits you can and report what is blocked.",
+  "assertions": [
+    "Identifies legacy std/http serve usage as incompatible and recommends or applies Deno.serve migration.",
+    "Identifies deployctl as sunset and recommends new Deploy GitHub integration or deno deploy.",
+    "Identifies Deno.Kv.enqueue or listenQueue as unsupported on new Deploy.",
+    "Does not invent a queue replacement without marking product or infrastructure choices as blockers."
+  ]
+}

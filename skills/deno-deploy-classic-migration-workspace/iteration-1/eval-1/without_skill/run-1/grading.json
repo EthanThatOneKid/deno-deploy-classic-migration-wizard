@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies legacy std/http serve usage as incompatible and recommends or applies Deno.serve migration.",
+      "passed": true,
+      "evidence": "Lines 7-33 recommend replacing std/http serve with Deno.serve."
+    },
+    {
+      "text": "Identifies deployctl as sunset and recommends new Deploy GitHub integration or deno deploy.",
+      "passed": true,
+      "evidence": "Lines 35-42 identify deployctl sunset and recommend GitHub integration or deno deploy."
+    },
+    {
+      "text": "Identifies Deno.Kv.enqueue or listenQueue as unsupported on new Deploy.",
+      "passed": true,
+      "evidence": "Lines 50-53 identify Deno.Kv.enqueue/listenQueue as unsupported."
+    },
+    {
+      "text": "Does not invent a queue replacement without marking product or infrastructure choices as blockers.",
+      "passed": true,
+      "evidence": "Lines 54-60 list blocked choices and required inventory rather than choosing one blindly."
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

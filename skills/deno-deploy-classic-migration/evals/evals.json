@@ -1,0 +1,41 @@
+{
+  "skill_name": "deno-deploy-classic-migration",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "This repo is still deployed on Deno Deploy Classic and uses Deno.openKv plus a custom domain. Please inspect the codebase, tell me what needs to change for the new Deploy platform, and give me a concrete KV migration plan. Don't just tell me to email support unless it's truly blocked.",
+      "expected_output": "Inspects the repo, references the official migration guide, identifies KV/custom-domain/manual dashboard work, produces app-specific KV migration guidance, and keeps support as fallback.",
+      "files": [],
+      "expectations": [
+        "References https://docs.deno.com/deploy/migration_guide/ or explicitly names the official Deploy Classic migration guide.",
+        "Separates code-inspection findings from manual dashboard steps.",
+        "Provides a KV migration path with preview or dry-run behavior before real import.",
+        "Keeps support@deno.com as a fallback rather than the only migration path."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Migrate this Deno app off Deploy Classic. It imports serve from std/http/server.ts, has a GitHub Action using deployctl, and calls Deno.Kv.enqueue for background jobs. Make the safe code/doc edits you can and report what is blocked.",
+      "expected_output": "Updates legacy serve usage to Deno.serve where safe, flags deployctl replacement, treats queues as unsupported on new Deploy, and separates code edits from manual or product-choice blockers.",
+      "files": [],
+      "expectations": [
+        "Identifies legacy std/http serve usage as incompatible and recommends or applies Deno.serve migration.",
+        "Identifies deployctl as sunset and recommends new Deploy GitHub integration or deno deploy.",
+        "Identifies Deno.Kv.enqueue or listenQueue as unsupported on new Deploy.",
+        "Does not invent a queue replacement without marking product or infrastructure choices as blockers."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want an agent-operable runbook for moving my dash.deno.com project to console.deno.com. Use the repo wizard as the checklist, but adapt it to my app source and include verification evidence.",
+      "expected_output": "Uses the shell wizard as the codified flow, maps work to official migration guide stages, inspects source, and returns a structured runbook with completed work, manual dashboard tasks, risks, and verification.",
+      "files": [],
+      "expectations": [
+        "Uses deno-deploy-classic-migration-wizard.sh as the local checklist or explicitly references the local wizard.",
+        "Maps work to the official migration guide stages such as env vars, domains, HTTP API, cron, queues, and KV.",
+        "Includes a verification section with commands run or commands that should be run.",
+        "Clearly marks dashboard-only work separately from agent-editable repository work."
+      ]
+    }
+  ]
+}

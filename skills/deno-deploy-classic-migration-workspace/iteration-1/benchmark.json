@@ -1,0 +1,293 @@
+{
+  "metadata": {
+    "skill_name": "deno-deploy-classic-migration",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-07-17T06:56:24Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "References https://docs.deno.com/deploy/migration_guide/ or explicitly names the official Deploy Classic migration guide.",
+          "passed": true,
+          "evidence": "Lines 1-5 include Migration Status and the official guide URL."
+        },
+        {
+          "text": "Separates code-inspection findings from manual dashboard steps.",
+          "passed": true,
+          "evidence": "Lines 7-16 describe completed repository inspection/code changes, while lines 26-34 list Manual Dashboard Steps."
+        },
+        {
+          "text": "Provides a KV migration path with preview or dry-run behavior before real import.",
+          "passed": true,
+          "evidence": "Lines 36-69 provide source/target connection, preview/export, dry-run import, real import, and verification commands."
+        },
+        {
+          "text": "Keeps support@deno.com as a fallback rather than the only migration path.",
+          "passed": true,
+          "evidence": "Line 44 says support is a fallback only for access, size, keyspace, or verification failures."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies legacy std/http serve usage as incompatible and recommends or applies Deno.serve migration.",
+          "passed": true,
+          "evidence": "Lines 14-28 show legacy serve replacement with Deno.serve."
+        },
+        {
+          "text": "Identifies deployctl as sunset and recommends new Deploy GitHub integration or deno deploy.",
+          "passed": true,
+          "evidence": "Lines 28 and 47 identify deployctl as sunset and recommend GitHub integration or deno deploy."
+        },
+        {
+          "text": "Identifies Deno.Kv.enqueue or listenQueue as unsupported on new Deploy.",
+          "passed": true,
+          "evidence": "Line 46 identifies Deno.Kv.enqueue and listenQueue as unsupported."
+        },
+        {
+          "text": "Does not invent a queue replacement without marking product or infrastructure choices as blockers.",
+          "passed": true,
+          "evidence": "Line 46 says replacement needs a product/infrastructure choice and cannot be invented without real semantics."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses deno-deploy-classic-migration-wizard.sh as the local checklist or explicitly references the local wizard.",
+          "passed": true,
+          "evidence": "Lines 4-5 and many stage headings explicitly reference deno-deploy-classic-migration-wizard.sh and wizard stages."
+        },
+        {
+          "text": "Maps work to the official migration guide stages such as env vars, domains, HTTP API, cron, queues, and KV.",
+          "passed": true,
+          "evidence": "Lines 43-156 cover source inspection, env vars, KV, deploy, custom domains, smoke tests, and decommissioning."
+        },
+        {
+          "text": "Includes a verification section with commands run or commands that should be run.",
+          "passed": true,
+          "evidence": "Lines 208-216 provide a Verification section with observed commands and outcomes."
+        },
+        {
+          "text": "Clearly marks dashboard-only work separately from agent-editable repository work.",
+          "passed": true,
+          "evidence": "Each numbered stage includes a Classification field, and lines 176-188 summarize manual dashboard steps."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "References https://docs.deno.com/deploy/migration_guide/ or explicitly names the official Deploy Classic migration guide.",
+          "passed": true,
+          "evidence": "Line 29 references the official Deploy Classic migration guide URL."
+        },
+        {
+          "text": "Separates code-inspection findings from manual dashboard steps.",
+          "passed": true,
+          "evidence": "Lines 3-17 describe repo/code findings, while lines 18-29 list dashboard and DNS steps."
+        },
+        {
+          "text": "Provides a KV migration path with preview or dry-run behavior before real import.",
+          "passed": true,
+          "evidence": "Lines 31-50 include inventory, preview, dry-run import, real import, verification, and skip-existing behavior."
+        },
+        {
+          "text": "Keeps support@deno.com as a fallback rather than the only migration path.",
+          "passed": true,
+          "evidence": "Line 52 explicitly says support is fallback, not the primary path."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Identifies legacy std/http serve usage as incompatible and recommends or applies Deno.serve migration.",
+          "passed": true,
+          "evidence": "Lines 7-33 recommend replacing std/http serve with Deno.serve."
+        },
+        {
+          "text": "Identifies deployctl as sunset and recommends new Deploy GitHub integration or deno deploy.",
+          "passed": true,
+          "evidence": "Lines 35-42 identify deployctl sunset and recommend GitHub integration or deno deploy."
+        },
+        {
+          "text": "Identifies Deno.Kv.enqueue or listenQueue as unsupported on new Deploy.",
+          "passed": true,
+          "evidence": "Lines 50-53 identify Deno.Kv.enqueue/listenQueue as unsupported."
+        },
+        {
+          "text": "Does not invent a queue replacement without marking product or infrastructure choices as blockers.",
+          "passed": true,
+          "evidence": "Lines 54-60 list blocked choices and required inventory rather than choosing one blindly."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses deno-deploy-classic-migration-wizard.sh as the local checklist or explicitly references the local wizard.",
+          "passed": true,
+          "evidence": "Line 3 names deno-deploy-classic-migration-wizard.sh as the source checklist."
+        },
+        {
+          "text": "Maps work to the official migration guide stages such as env vars, domains, HTTP API, cron, queues, and KV.",
+          "passed": true,
+          "evidence": "Lines 85-397 cover HTTP, queues/KV/cron, env vars, deploy, custom domains, smoke tests, and decommissioning."
+        },
+        {
+          "text": "Includes a verification section with commands run or commands that should be run.",
+          "passed": true,
+          "evidence": "Lines 11-32 include current repository evidence and commands; later stages include verification evidence to capture."
+        },
+        {
+          "text": "Clearly marks dashboard-only work separately from agent-editable repository work.",
+          "passed": true,
+          "evidence": "Lines 398-422 provide separate dashboard-only and agent-editable repository work summaries."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}
