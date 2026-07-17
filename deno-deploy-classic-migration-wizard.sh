@@ -219,6 +219,224 @@ prompt_env_vars() {
   done
 }
 
+show_kv_migration_scripts() {
+  say "Use one-time Deno scripts so the migration is reviewable, repeatable, and app-specific."
+  note "Reference: https://docs.deno.com/deploy/reference/deno_kv/"
+  note "New Deploy apps use Deno.openKv() after a KV database is assigned. Local scripts use the URL connector."
+  warn "These examples copy keys and values. If your app relies on key expiration, reapply TTLs in app-specific code."
+  printf '\n'
+  step "Preview or export from the source KV. Pipe this into deno eval, or save it as kv-export-once.ts."
+  cat <<'EOF'
+
+const kvUrl = Deno.env.get("KV_URL");
+const outPath = Deno.env.get("KV_OUT") ?? "kv-export.jsonl";
+const prefix = JSON.parse(Deno.env.get("KV_PREFIX") ?? "[]");
+const limit = Number(Deno.env.get("KV_LIMIT") ?? "0");
+const preview = Deno.args.includes("--preview");
+
+if (!kvUrl) {
+  throw new Error("Set KV_URL to a Deno KV connect URL");
+}
+
+function encode(value: unknown): unknown {
+  if (value instanceof Uint8Array) {
+    return { __kvType: "Uint8Array", data: btoa(String.fromCharCode(...value)) };
+  }
+  if (value instanceof Deno.KvU64) {
+    return { __kvType: "KvU64", data: value.value.toString() };
+  }
+  if (typeof value === "bigint") {
+    return { __kvType: "bigint", data: value.toString() };
+  }
+  if (value instanceof Date) {
+    return { __kvType: "Date", data: value.toISOString() };
+  }
+  if (value instanceof RegExp) {
+    return { __kvType: "RegExp", source: value.source, flags: value.flags };
+  }
+  if (value instanceof Map) {
+    return { __kvType: "Map", data: [...value.entries()].map(([k, v]) => [encode(k), encode(v)]) };
+  }
+  if (value instanceof Set) {
+    return { __kvType: "Set", data: [...value.values()].map(encode) };
+  }
+  if (Array.isArray(value)) return value.map(encode);
+  if (value !== null && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) result[key] = encode(item);
+    return result;
+  }
+  return value;
+}
+
+const kv = await Deno.openKv(kvUrl);
+const out = preview ? undefined : await Deno.open(outPath, {
+  create: true,
+  write: true,
+  truncate: true,
+});
+const encoder = new TextEncoder();
+let count = 0;
+
+try {
+  for await (const entry of kv.list({ prefix }, { batchSize: 500 })) {
+    const record = {
+      key: encode(entry.key),
+      value: encode(entry.value),
+      versionstamp: entry.versionstamp,
+    };
+    const line = JSON.stringify(record);
+    if (preview) console.log(line);
+    else await out!.write(encoder.encode(line + "\n"));
+
+    count++;
+    if (limit > 0 && count >= limit) break;
+  }
+} finally {
+  out?.close();
+  kv.close();
+}
+
+console.error(JSON.stringify({ mode: preview ? "preview" : "export", prefix, count, outPath }));
+EOF
+
+  printf '\n'
+  step "Dry-run or import into the target KV. Pipe this into deno eval, or save it as kv-import-once.ts."
+  cat <<'EOF'
+
+const kvUrl = Deno.env.get("KV_URL");
+const inPath = Deno.env.get("KV_IN") ?? "kv-export.jsonl";
+const dryRun = Deno.args.includes("--dry-run");
+const overwrite = Deno.args.includes("--overwrite");
+
+if (!kvUrl) {
+  throw new Error("Set KV_URL to https://api.deno.com/v2/databases/<Database ID>/connect");
+}
+if (overwrite && !Deno.args.includes("--i-understand-overwrite")) {
+  throw new Error("Overwrite is destructive. Re-run with --overwrite --i-understand-overwrite if intentional.");
+}
+
+type EncodedValue = {
+  __kvType?: string;
+  data?: unknown;
+  source?: string;
+  flags?: string;
+};
+
+function decode(value: unknown): unknown {
+  if (value && typeof value === "object" && "__kvType" in value) {
+    const encoded = value as EncodedValue;
+    switch (encoded.__kvType) {
+      case "Uint8Array":
+        return Uint8Array.from(atob(encoded.data as string), (char) => char.charCodeAt(0));
+      case "KvU64":
+        return new Deno.KvU64(BigInt(encoded.data as string));
+      case "bigint":
+        return BigInt(encoded.data as string);
+      case "Date":
+        return new Date(encoded.data as string);
+      case "RegExp":
+        return new RegExp(encoded.source ?? "", encoded.flags ?? "");
+      case "Map":
+        return new Map((encoded.data as [unknown, unknown][]).map(([key, item]) => [decode(key), decode(item)]));
+      case "Set":
+        return new Set((encoded.data as unknown[]).map(decode));
+    }
+  }
+  if (Array.isArray(value)) return value.map(decode);
+  if (value !== null && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) result[key] = decode(item);
+    return result;
+  }
+  return value;
+}
+
+const kv = await Deno.openKv(kvUrl);
+const file = await Deno.open(inPath, { read: true });
+let processed = 0;
+let imported = 0;
+let skipped = 0;
+
+async function importLine(line: string) {
+  if (!line.trim()) return;
+  const entry = JSON.parse(line) as { key: unknown; value: unknown };
+  const key = decode(entry.key) as Deno.KvKey;
+  const value = decode(entry.value);
+  processed++;
+
+  if (dryRun) {
+    const existing = await kv.get(key);
+    if (existing.versionstamp === null || overwrite) imported++;
+    else skipped++;
+    return;
+  }
+
+  const result = overwrite
+    ? await kv.atomic().set(key, value).commit()
+    : await kv.atomic().check({ key, versionstamp: null }).set(key, value).commit();
+
+  if (result.ok) imported++;
+  else skipped++;
+}
+
+try {
+  let pending = "";
+  for await (const chunk of file.readable.pipeThrough(new TextDecoderStream())) {
+    const lines = (pending + chunk).split("\n");
+    pending = lines.pop() ?? "";
+
+    for (const line of lines) {
+      await importLine(line);
+    }
+  }
+
+  await importLine(pending);
+} finally {
+  file.close();
+  kv.close();
+}
+
+console.log(JSON.stringify({ dryRun, overwrite, processed, imported, skipped, inPath }));
+EOF
+
+  printf '\n'
+  step "Example commands:"
+  cat <<'EOF'
+
+# New Deploy target URL format from the Deno KV reference:
+# https://api.deno.com/v2/databases/<Database ID>/connect
+
+# Preview a prefix from the source KV after saving kv-export-once.ts:
+DENO_KV_ACCESS_TOKEN="<source-token>" \
+KV_URL="<source-kv-connect-url>" \
+KV_PREFIX='["replace-with-app-prefix"]' \
+deno run --unstable-kv --allow-env --allow-net kv-export-once.ts --preview
+
+# Export that prefix to JSONL:
+DENO_KV_ACCESS_TOKEN="<source-token>" \
+KV_URL="<source-kv-connect-url>" \
+KV_PREFIX='["replace-with-app-prefix"]' \
+KV_OUT="kv-export.jsonl" \
+deno run --unstable-kv --allow-env --allow-net --allow-write kv-export-once.ts
+
+# Dry-run import into the new Deploy KV:
+DENO_KV_ACCESS_TOKEN="<new-deploy-token>" \
+KV_URL="https://api.deno.com/v2/databases/<Database ID>/connect" \
+KV_IN="kv-export.jsonl" \
+deno run --unstable-kv --allow-env --allow-net --allow-read kv-import-once.ts --dry-run
+
+# Real import. Default behavior skips keys that already exist in the target:
+DENO_KV_ACCESS_TOKEN="<new-deploy-token>" \
+KV_URL="https://api.deno.com/v2/databases/<Database ID>/connect" \
+KV_IN="kv-export.jsonl" \
+deno run --unstable-kv --allow-env --allow-net --allow-read kv-import-once.ts
+
+# deno eval form after saving either script. deno eval has implicit permissions:
+deno eval --unstable-kv --ext=ts "$(cat kv-export-once.ts)" -- --preview
+EOF
+}
+
 banner "Deno Deploy Classic migration"
 
 stage "Identify the project" 5
@@ -264,9 +482,26 @@ warn "If this project uses queues, replace them with an external queue or databa
 step "Review KV usage:"
 scan_code 'Deno\.openKv|Deno\.Kv|openKv\('
 if confirm "Does this project need KV data migrated?"; then
-  SKIPPED+=("Email support@deno.com for KV data migration for $DENO_CLASSIC_PROJECT_NAME")
-  open_url "mailto:support@deno.com?subject=Deno%20KV%20migration%20request%20for%20$DENO_CLASSIC_PROJECT_NAME"
-  pause "Press Enter after drafting the KV migration support request."
+  open_url "https://docs.deno.com/deploy/reference/deno_kv/"
+  warn "Do not delete or unassign source KV data until export, import, and verification all pass."
+  step "In the new Deploy console, provision a Deno KV database and assign it to the app."
+  step "Confirm the target timeline/database. New Deploy isolates databases per timeline."
+  step "Inspect this app's source code and choose the exact KV key prefixes to migrate."
+  ask DENO_CLASSIC_KV_CONNECT_URL "Source KV connect URL:"
+  ask DENO_NEW_KV_CONNECT_URL "New Deploy KV connect URL (https://api.deno.com/v2/databases/<Database ID>/connect):"
+  ask DENO_KV_EXPORT_FILE "KV export file path [kv-export.jsonl]:"
+  DENO_KV_EXPORT_FILE="${DENO_KV_EXPORT_FILE:-kv-export.jsonl}"
+  write_env DENO_CLASSIC_KV_CONNECT_URL "$DENO_CLASSIC_KV_CONNECT_URL"
+  write_env DENO_NEW_KV_CONNECT_URL "$DENO_NEW_KV_CONNECT_URL"
+  write_env DENO_KV_EXPORT_FILE "$DENO_KV_EXPORT_FILE"
+  show_kv_migration_scripts
+  step "Run preview/export with the source token, then dry-run/import with the new Deploy token."
+  step "Verify counts and representative keys in the new app before cutover."
+  if ! confirm "Did KV export, dry-run import, real import, and verification all pass?"; then
+    SKIPPED+=("Finish self-serve KV export/import/verification for $DENO_CLASSIC_PROJECT_NAME")
+    SKIPPED+=("Use support@deno.com as the KV migration escape hatch if remote access or verification fails")
+    open_url "mailto:support@deno.com?subject=Deno%20KV%20migration%20request%20for%20$DENO_CLASSIC_PROJECT_NAME"
+  fi
 fi
 
 stage "Migrate environment variables" 10
